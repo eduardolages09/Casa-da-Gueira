@@ -1,0 +1,654 @@
+/* Casa da Gueira — sistema visual (versão 9)
+   À onda do site atual da casa: fundo branco, muito espaço, letra fina, e
+   as cores que a casa já usa:
+   - cal: branco, como as paredes e o site da casa (o fundo);
+   - linho: um taupe muito claro (uma secção);
+   - azeitona: o verde das portas e armários, o mesmo do site (secções de cor);
+   - pinho: o taupe dos botões e do menu do site;
+   - tinta: o quase-preto do site, para o texto.
+   O fundo da página muda de tom com a secção que está no meio do ecrã
+   (main.js, "TONS"): as secções não têm fundo próprio, herdam o do body,
+   e o texto secundário usa a cor herdada com transparência, para mudar
+   junto. Tipo: Manrope (como no exemplo do Pátio da Gata); Newsreader no
+   título do hero e, em itálico, nas citações. */
+
+:root {
+  --cal: #ffffff;
+  --linho: #f4f0eb;
+  --azeitona-escura: #736f50;             /* texto claro por cima: 5:1 */
+  --azeitona: #8f8a55;
+  --azeitona-texto: #6a6638;              /* 5,3:1 sobre cal */
+  --pinho: #a9907f;
+  --tinta-escura: #1d1e1c;
+  --claro: #ffffff;
+
+  --fundo: var(--cal);
+  --tinta: var(--tinta-escura);
+  --linha: color-mix(in srgb, currentColor 16%, transparent);
+
+  --sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+
+  --max: 1320px;
+  --margem: clamp(16px, 4vw, 56px);
+  --secao: clamp(120px, 15vw, 232px);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --atraso: 2.15s; /* o hero espera pela abertura */
+}
+.sem-abertura { --atraso: 0.15s; }
+html[data-fundo="azeitona"] { --fundo: var(--azeitona-escura); --tinta: var(--claro); }
+html[data-fundo="linho"] { --fundo: var(--linho); }
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { overflow-x: clip; -webkit-text-size-adjust: 100%; }
+html:not(.lenis) { scroll-behavior: smooth; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: clip; }
+body {
+  font-family: var(--sans); font-size: 17px; line-height: 1.6; color: var(--tinta); background: var(--fundo);
+  overflow-x: clip; -webkit-font-smoothing: antialiased;
+  transition: background-color 1.1s var(--ease), color 1.1s var(--ease);
+}
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; }
+ul, ol { list-style: none; padding: 0; }
+figure, blockquote { margin: 0; }
+address { font-style: normal; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+h1, h2, h3 { font-weight: 400; }
+:focus-visible { outline: 2px solid var(--pinho); outline-offset: 4px; }
+::selection { background: var(--azeitona); color: var(--claro); }
+
+.invisivel { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.salto { position: absolute; left: 16px; top: -80px; z-index: 500; background: var(--tinta-escura); color: var(--claro); padding: 10px 16px; }
+.salto:focus { top: 16px; }
+.largura { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--margem); }
+
+/* sem JavaScript, cada secção leva o seu tom */
+html:not(.js) [data-fundo="azeitona"] { background: var(--azeitona-escura); color: var(--claro); }
+html:not(.js) [data-fundo="linho"] { background: var(--linho); }
+
+/* ---------- tipo ---------- */
+.titulo { font-weight: 300; font-size: clamp(42px, 5.2vw, 88px); line-height: 1.04; letter-spacing: -0.04em; text-wrap: balance; }
+.lead { font-weight: 300; font-size: clamp(18px, 1.4vw, 21px); line-height: 1.55; max-width: 38ch; text-wrap: pretty; opacity: 0.85; }
+/* os títulos sobem de dentro de si próprios ao entrar no ecrã (main.js) */
+/* folga em baixo para as letras com perna (g, p, ç) não ficarem cortadas */
+.js .titulo { overflow: hidden; padding-bottom: 0.24em; margin-bottom: -0.24em; }
+.js .titulo .sobe { display: inline-block; transform: translateY(125%); transition: transform 1.3s var(--ease); }
+.js .titulo.is-visivel .sobe { transform: none; }
+
+/* ---------- botões ---------- */
+.botao {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.3em; min-height: 54px; padding: 0 30px;
+  font-family: var(--sans); font-size: 15.5px; font-weight: 600; letter-spacing: -0.005em; text-decoration: none; white-space: nowrap;
+  background: var(--tinta); color: var(--fundo); border: 1px solid transparent; border-radius: 999px;
+  transition: background-color .4s var(--ease), color .4s var(--ease), border-color .4s, transform .4s var(--ease);
+}
+.botao:hover { transform: translateY(-2px); }
+.botao--pequeno { min-height: 42px; padding: 0 22px; font-size: 14.5px; }
+.botao--pinho { background: var(--pinho); color: var(--tinta-escura); }
+.botao--pinho:hover { background: #bba292; }
+.botao--branco { background: var(--claro); color: var(--tinta-escura); }
+.botao--branco:hover { background: #f1eee9; }
+.botao--linha { background: transparent; color: inherit; border-color: color-mix(in srgb, currentColor 38%, transparent); }
+.botao--linha:hover { border-color: currentColor; }
+.botao__seta { width: 18px; height: 18px; margin-left: 6px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .4s var(--ease); }
+.botao:hover .botao__seta { transform: translateX(4px); }
+
+/* ---------- citações ---------- */
+.voz p:first-child { font-family: var(--serif); font-style: italic; font-size: clamp(22px, 1.9vw, 27px); line-height: 1.38; text-wrap: pretty; }
+.voz__traducao { margin-top: 10px; font-size: 15px; opacity: 0.66; }
+.voz footer { margin-top: 14px; font-size: 14px; font-weight: 600; opacity: 0.66; }
+
+/* ---------- fotografias que se revelam ao entrar no ecrã ---------- */
+[data-revela] { overflow: hidden; border-radius: 4px; }
+.js [data-revela] { clip-path: inset(12% 0 0 0 round 4px); transition: clip-path 1.6s var(--ease); }
+.js [data-revela] > * { transform: scale(1.16); transition: transform 2.2s var(--ease); }
+.js [data-revela].is-visivel { clip-path: inset(0 0 0 0 round 4px); }
+.js [data-revela].is-visivel > * { transform: none; }
+
+/* fotografia que abre o visor */
+.abre-foto { display: block; width: 100%; height: 100%; cursor: zoom-in; overflow: hidden; }
+.abre-foto img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.6s var(--ease); }
+.abre-foto:hover img { transform: scale(1.03); }
+
+
+/* ============================================================
+   ABERTURA — as pedras do logótipo abrem-se sobre a fotografia
+   ============================================================ */
+.abertura { position: fixed; inset: 0; z-index: 400; pointer-events: none; animation: abertura-sai .5s ease 1.95s forwards; }
+.abertura__svg { width: 100%; height: 100%; }
+.abertura__cal { fill: var(--cal); }
+.abertura__pedras path {
+  transform-box: fill-box; transform-origin: center; opacity: 0; transform: scale(0.55) rotate(-4deg);
+  animation: pedra-entra .75s var(--ease) forwards; animation-delay: calc(0.12s + var(--i) * 0.065s);
+}
+/* o zoom parte do meio da pedra maior: nenhuma junta fica presa no centro */
+.abertura__pedras { transform-box: fill-box; transform-origin: 30% 49%; animation: pedras-abrem 1.3s cubic-bezier(0.76, 0, 0.18, 1) 1.1s forwards; }
+@keyframes pedra-entra { to { opacity: 1; transform: none; } }
+@keyframes pedras-abrem { to { transform: scale(30); } }
+@keyframes abertura-sai { to { opacity: 0; visibility: hidden; } }
+.sem-abertura .abertura { display: none; }
+
+/* ============================================================
+   TOPO
+   ============================================================ */
+.topo { position: fixed; inset: 0 0 auto; z-index: 100; color: var(--claro); transition: background-color .6s var(--ease), color .6s, transform .6s var(--ease), box-shadow .6s; }
+.topo__dentro { margin: 0 auto; padding: 20px var(--margem); display: flex; align-items: center; justify-content: space-between; gap: 24px; transition: padding .5s var(--ease); }
+.topo.is-solido { background: color-mix(in srgb, var(--fundo) 86%, transparent); color: var(--tinta); box-shadow: 0 1px 0 var(--linha); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
+.topo.is-solido .topo__dentro { padding-top: 11px; padding-bottom: 11px; }
+.topo.is-escondido { transform: translateY(-100%); }
+
+.marca { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.marca__pedras { width: 36px; height: 41px; fill: var(--pinho); }
+.marca__letras { width: 62px; height: 46px; fill: currentColor; transition: opacity .5s; }
+/* em cima do hero o nome já está em grande: o topo leva só as pedras */
+.topo:not(.is-solido):not(.menu-aberto) .marca__letras { opacity: 0; }
+
+.nav { display: flex; align-items: center; gap: clamp(20px, 2.4vw, 36px); }
+.nav ul { display: flex; gap: clamp(18px, 2vw, 30px); }
+.nav ul a { font-size: 14.5px; font-weight: 500; text-decoration: none; padding: 6px 0; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size .45s var(--ease); }
+.nav ul a:hover, .nav ul a.is-ativo { background-size: 100% 1px; }
+.topo:not(.is-solido) .nav__reservar { background: transparent; color: var(--claro); border-color: rgba(244, 241, 234, 0.55); }
+
+.menu { display: none; width: 44px; height: 44px; position: relative; z-index: 2; }
+.menu span { position: absolute; left: 10px; right: 10px; height: 1.5px; background: currentColor; transition: transform .4s var(--ease), top .4s var(--ease); }
+.menu span:first-child { top: 17px; }
+.menu span:last-child { top: 26px; }
+.menu[aria-expanded="true"] span:first-child { top: 21.5px; transform: rotate(45deg); }
+.menu[aria-expanded="true"] span:last-child { top: 21.5px; transform: rotate(-45deg); }
+
+@media (max-width: 960px) {
+  .menu { display: block; }
+  .nav {
+    position: fixed; inset: 0; z-index: 1; flex-direction: column; justify-content: center; gap: 44px;
+    background: var(--azeitona-escura); color: var(--claro); opacity: 0; visibility: hidden; transition: opacity .45s var(--ease), visibility .45s;
+  }
+  .nav ul { flex-direction: column; align-items: center; gap: 10px; }
+  .nav ul a { font-size: 40px; font-weight: 400; letter-spacing: -0.04em; }
+  .topo.menu-aberto .nav { opacity: 1; visibility: visible; }
+  .topo.menu-aberto { color: var(--claro); background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .topo.menu-aberto .nav__reservar { background: var(--pinho); color: var(--tinta-escura); border-color: transparent; }
+  .marca { position: relative; z-index: 2; }
+}
+
+/* ============================================================
+   1. HERO — como o exemplo do Pátio da Gata: o nome enorme e
+   translúcido sobre o céu, o título e a frase ao centro, em baixo
+   ============================================================ */
+.hero { position: relative; height: 100vh; height: 100svh; min-height: 600px; overflow: hidden; color: #fff; background: var(--azeitona-escura); }
+/* o "filme": cada plano funde-se no seguinte (1,8 s) enquanto a câmara se
+   move devagar; main.js ("FILME") troca a classe is-ativo a cada 6,5 s */
+.hero__filme, .hero__plano { position: absolute; inset: 0; }
+/* a troca dura 0,8 s: suave, mas lê-se como um corte de câmara */
+.hero__plano { opacity: 0; transition: opacity 0.8s cubic-bezier(0.45, 0, 0.55, 1); }
+.hero__plano.is-ativo { opacity: 1; }
+/* Nitidez: cada foto é desenhada a 112 % do hero e a câmara só a reduz
+   (até 90 %, ou desliza a 100 %), por isso o browser nunca a amplia para lá
+   do tamanho em que a desenhou. As fotos saem do original até 3000 px, com o
+   tom do site já aplicado (scripts/imagens.py, FILME): sem filtro CSS, que
+   pesava no movimento e o fazia tremer. Os movimentos são à volta do centro,
+   para cobrirem sempre o hero. */
+.hero__plano img {
+  position: absolute; left: -6%; top: -6%; width: 112%; height: 112%; max-width: none;
+  object-fit: cover; object-position: var(--pos, 50% 50%); backface-visibility: hidden;
+}
+@media (max-aspect-ratio: 4/5) { .hero__plano img { object-position: var(--pos-alto, var(--pos, 50% 50%)); } }
+/* cada plano entra já a mexer e vai abrandando (o impulso marca a troca);
+   dura o tempo do plano (5,5 s) mais a troca (0,8 s) */
+.hero__plano:is(.is-ativo, .is-saindo) img { animation: var(--mov) 6.4s cubic-bezier(0.22, 0.55, 0.4, 1) forwards; }
+/* o primeiro plano entra com a página, à espera da abertura */
+/* o primeiro entra com a página, por trás da abertura, e troca 4,5 s depois dela */
+.hero__filme:not(.ja-correu) .hero__plano:first-child img { animation-duration: 6.8s; animation-timing-function: var(--ease); animation-delay: calc(var(--atraso) - 1.3s); animation-fill-mode: both; }
+.hero__filme.is-pausado .hero__plano img { animation-play-state: paused; }
+@keyframes kb-afasta { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(0, 0, 0) scale(0.9); } }
+@keyframes kb-aproxima { from { transform: translate3d(0, 0, 0) scale(0.9); } to { transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes kb-direita { from { transform: translate3d(-4.5%, 0, 0); } to { transform: translate3d(4.5%, 0, 0); } }
+@keyframes kb-esquerda { from { transform: translate3d(4.5%, 0, 0); } to { transform: translate3d(-4.5%, 0, 0); } }
+/* pausar o filme (obrigatório para movimento automático com mais de 5 s) */
+.hero__pausa {
+  position: absolute; right: var(--margem); bottom: 22px; z-index: 3; width: 44px; height: 44px; display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.4); background: rgba(28, 27, 16, 0.18); color: #fff;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; opacity: 0;
+  animation: aparece 1s var(--ease) calc(var(--atraso) + 1.2s) forwards; transition: background .3s, border-color .3s;
+}
+.hero__pausa:hover { background: rgba(28, 27, 16, 0.36); border-color: rgba(255, 255, 255, 0.7); }
+.hero__pausa svg { width: 18px; height: 18px; grid-area: 1 / 1; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.hero__pausa-play { fill: currentColor !important; stroke: none !important; display: none; }
+.hero__pausa[aria-pressed="true"] .hero__pausa-ii { display: none; }
+.hero__pausa[aria-pressed="true"] .hero__pausa-play { display: block; }
+/* os traços de progresso: um por fotografia, enchem-se durante o plano
+   (--dur, posto pelo main.js); os já vistos ficam cheios. Cada traço salta
+   para a sua fotografia. Área de toque de 44 px, traço de 2 px. */
+.hero__marcas {
+  position: absolute; left: var(--margem); bottom: 22px; z-index: 3; display: flex; gap: 6px; opacity: 0;
+  animation: aparece 1s var(--ease) calc(var(--atraso) + 1.2s) forwards;
+}
+.hero__marcas[hidden] { display: none; }
+.hero__marca { position: relative; width: 34px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; }
+.hero__marca::before, .hero__marca span { content: ""; position: absolute; left: 0; right: 0; top: 21px; height: 2px; border-radius: 2px; }
+.hero__marca::before { background: rgba(255, 255, 255, 0.32); transition: background .3s; }
+.hero__marca:hover::before { background: rgba(255, 255, 255, 0.55); }
+.hero__marca span { background: #fff; transform: scaleX(0); transform-origin: left; }
+.hero__marca.is-vista span { transform: none; }
+.hero__marca.is-atual span { animation: marca-enche var(--dur, 5.5s) linear forwards; }
+.hero__marcas.is-pausado .hero__marca.is-atual span { animation-play-state: paused; }
+@keyframes marca-enche { to { transform: none; } }
+/* no telemóvel: botões encostados (31 px cada, para o dedo), traços separados por dentro */
+@media (max-width: 700px) { .hero__marcas { gap: 0; } .hero__marca { width: 31px; } .hero__marca::before, .hero__marca span { left: 3px; right: 3px; }
+  .hero:has(.hero__marcas:not([hidden])) .hero__descer { display: none; }   /* não cabe ao lado dos traços */
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% 72%, rgba(28, 27, 16, 0.42) 0%, rgba(28, 27, 16, 0) 62%),
+    linear-gradient(0deg, rgba(28, 27, 16, 0.55) 0%, rgba(28, 27, 16, 0) 40%),
+    linear-gradient(180deg, rgba(28, 27, 16, 0.36) 0%, rgba(28, 27, 16, 0) 36%);
+}
+.hero__conteudo {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: clamp(100px, 15vh, 170px) var(--margem) clamp(64px, 11vh, 120px);
+}
+/* o nome: letra a letra, de desfocado para nítido (como o BlurText do React Bits) */
+.hero__nome {
+  font-weight: 800; font-size: clamp(56px, 9.7vw, 200px); line-height: 0.86; letter-spacing: -0.045em; white-space: nowrap;
+  color: rgba(255, 255, 255, 0.82); user-select: none;
+}
+.hero__palavra { display: inline-block; }
+/* cada letra em degradê: branca em cima, a fundir-se com a paisagem em baixo
+   (o padding vertical dá folga ao desenho da letra, que passa da line-height) */
+.hero__nome .l {
+  padding: 0.1em 0; margin: -0.1em 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.8) 36%, rgba(255, 255, 255, 0.12) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero__nome .l { display: inline-block; opacity: 0; filter: blur(16px); transform: translateY(26%); animation: nitido 1.5s var(--ease) forwards; animation-delay: calc(var(--atraso) + var(--i) * 0.055s); }
+@keyframes nitido { to { opacity: 1; filter: blur(0); transform: none; } }
+
+.hero__texto { margin-top: auto; }
+.hero__titulo {
+  font-family: var(--serif); font-weight: 300; font-size: clamp(38px, 5vw, 92px); line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance;
+  text-shadow: 0 2px 30px rgba(28, 27, 16, 0.3); opacity: 0; animation: aparece 1.4s var(--ease) calc(var(--atraso) + 0.55s) forwards;
+}
+.hero__sub { margin: 18px auto 0; max-width: 56ch; font-size: clamp(15.5px, 1.15vw, 18px); line-height: 1.55; color: rgba(255, 255, 255, 0.9); opacity: 0; animation: aparece 1.4s var(--ease) calc(var(--atraso) + 0.75s) forwards; }
+@keyframes aparece { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* sinal para descer: uma linha que corre */
+/* 44 px de largura para o dedo; a linha de 1 px desenha-se ao centro */
+.hero__descer { position: absolute; left: 50%; bottom: 22px; z-index: 2; width: 44px; height: 46px; margin-left: -22px; overflow: hidden; background: linear-gradient(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25)) center / 1px 100% no-repeat; opacity: 0; animation: aparece 1s var(--ease) calc(var(--atraso) + 1.2s) forwards; }
+.hero__descer span { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; margin-left: -0.5px; background: #fff; transform: translateY(-100%); animation: corre 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+@keyframes corre { 0% { transform: translateY(-100%); } 60%, 100% { transform: translateY(100%); } }
+
+@media (max-width: 700px) {
+  .hero__conteudo { padding-top: 112px; padding-bottom: 92px; }
+  .hero__nome { font-size: 21.5vw; line-height: 0.84; }
+  .hero__palavra:last-child { display: block; }
+  .hero__titulo { font-size: clamp(34px, 9.6vw, 44px); }
+  .hero__sub { margin-top: 12px; }
+}
+
+/* ============================================================
+   PORMENORES — fotos pequenas de detalhes, espalhadas pela página
+   ============================================================ */
+.detalhe { aspect-ratio: 3 / 4; }
+.detalhe img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ============================================================
+   2. A CASA — uma frase que se acende palavra a palavra com o
+   scroll (main.js, "TEXTO QUE SE ACENDE"), entre dois pormenores
+   ============================================================ */
+.casa { padding: calc(var(--secao) * 1.1) 0; }
+.casa__grelha { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 2.4fr) minmax(0, 1.15fr); gap: clamp(24px, 4vw, 72px); align-items: center; }
+.casa__detalhe { width: min(100%, 310px); }
+.casa__detalhe--a { justify-self: start; align-self: end; transform: translateY(18%); }
+.casa__detalhe--b { justify-self: end; align-self: start; transform: translateY(-18%); }
+.acende {
+  margin: 0 auto; text-align: center;
+  font-weight: 300; font-size: clamp(23px, 2.3vw, 38px); line-height: 1.32; letter-spacing: -0.022em; text-wrap: balance;
+}
+.acende .p { opacity: var(--o, 1); transition: opacity .3s linear; }
+@media (max-width: 900px) {
+  .casa__grelha { grid-template-columns: 1fr 1fr; row-gap: 56px; }
+  .acende { grid-column: 1 / -1; grid-row: 1; }
+  .casa__detalhe { width: 78%; transform: none; }
+  .casa__detalhe--a { grid-row: 2; }
+  .casa__detalhe--b { grid-row: 2; margin-top: 48px; }
+}
+
+/* um texto delicado ao lado do título (espaços comuns, quartos, experiências) */
+.delicado { max-width: 30ch; text-wrap: balance; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(21px, 1.8vw, 27px); line-height: 1.4; opacity: 0.92; }
+
+
+/* ============================================================
+   3. A PISCINA — a fotografia cresce até ocupar o ecrã
+   (como o Scroll Expand do React Bits). --p vai de 0 a 1 (main.js).
+   Sem JavaScript ou com movimento reduzido fica já aberta.
+   ============================================================ */
+.cresce { --p: 1; position: relative; }
+.cresce__palco { position: relative; height: 100vh; height: 100svh; min-height: 520px; overflow: hidden; }
+.js .cresce { height: 250vh; }
+.js .cresce__palco { position: sticky; top: 0; }
+.cresce__moldura {
+  --ix: 33vw; --iy: 19vh;
+  position: absolute; inset: 0; z-index: 1;
+  clip-path: inset(calc((1 - var(--p)) * var(--iy)) calc((1 - var(--p)) * var(--ix)) round calc((1 - var(--p)) * 10px));
+}
+.cresce__moldura img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; transform: scale(calc(1.18 - var(--p) * 0.18)); }
+.cresce__titulo {
+  position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--margem); pointer-events: none;
+  font-weight: 300; font-size: clamp(40px, 5.6vw, 96px); line-height: 0.95; letter-spacing: -0.045em;
+}
+.cresce__titulo span { display: block; opacity: calc(1 - var(--p) * 1.4); }
+.cresce__titulo span:first-child { transform: translateX(calc(var(--p) * -30vw)); }
+.cresce__titulo span:last-child { transform: translateX(calc(var(--p) * 30vw)); }
+
+.cresce__moldura::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(0deg, rgba(24, 30, 22, 0.5) 0%, rgba(24, 30, 22, 0) 42%);
+  opacity: clamp(0, calc((var(--p) - 0.7) * 3.4), 1);
+}
+.cresce__texto {
+  position: absolute; left: var(--margem); right: var(--margem); bottom: clamp(32px, 6vh, 64px); z-index: 2;
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; color: var(--claro); pointer-events: none;
+  opacity: clamp(0, calc((var(--p) - 0.8) * 5), 1);
+  transform: translateY(calc((1 - var(--p)) * 60px));
+}
+.cresce__texto p { max-width: 17em; font-weight: 300; font-size: clamp(22px, 2.3vw, 36px); line-height: 1.15; letter-spacing: -0.03em; text-wrap: balance; }
+.cresce__texto .cresce__medida { font-weight: 300; font-size: clamp(15px, 1.2vw, 18px); letter-spacing: 0; opacity: 0.85; white-space: nowrap; }
+
+@media (max-width: 760px), (max-aspect-ratio: 4/5) {
+  .cresce__moldura { --ix: 8vw; --iy: 25vh; }
+  .cresce__texto { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .cresce__titulo { flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(25vh - 1.9em) var(--margem); padding: calc(25svh - 1.9em) var(--margem); font-size: clamp(42px, 12vw, 64px); }
+  .cresce__titulo span:last-child { align-self: flex-end; }
+  .cresce__titulo span:first-child { transform: translateY(calc(var(--p) * -24vh)); }
+  .cresce__titulo span:last-child { transform: translateY(calc(var(--p) * 24vh)); }
+}
+
+
+/* cabeça de secção: título à esquerda, uma linha à direita */
+.cabeca { display: flex; justify-content: space-between; align-items: flex-end; gap: 28px 64px; flex-wrap: wrap; margin-bottom: clamp(48px, 6vw, 96px); }
+.cabeca .titulo { max-width: 13em; }
+
+/* ============================================================
+   5. O CORAÇÃO DA CASA — como a Vista Mágica da Quinta da Malhada:
+   uma abertura a ecrã inteiro e as divisões numa fila que desliza
+   ============================================================ */
+.dentro { margin-top: var(--secao); color: var(--claro); }
+.dentro__abertura { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; display: flex; align-items: flex-end; }
+.dentro__abertura-img { position: absolute; inset: -8% 0; will-change: transform; }
+.dentro__abertura-img img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 55%; }
+/* ao alto (telemóvel) fica a janela verde e o candeeiro */
+@media (orientation: portrait) { .dentro__abertura-img img { object-position: 82% 50%; } }
+.dentro__veu { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(36, 35, 22, 0.72) 0%, rgba(36, 35, 22, 0.18) 45%, rgba(36, 35, 22, 0) 70%); }
+.dentro__abertura-texto { position: relative; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px 64px; padding-bottom: clamp(48px, 9vh, 100px); }
+.dentro__abertura-texto .titulo { max-width: 10em; }
+
+.divisoes { padding: clamp(56px, 7vw, 96px) 0 var(--secao); }
+.divisoes__cabeca { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: clamp(18px, 3vh, 32px); }
+.divisoes__contador { font-family: var(--serif); font-size: 22px; font-weight: 300; font-variant-numeric: tabular-nums; opacity: 0.85; }
+.divisoes__dica { font-size: 14px; opacity: 0.72; }
+.divisoes__fila {
+  display: flex; align-items: stretch; gap: clamp(14px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding: 0 var(--margem) 4px max(var(--margem), calc((100vw - var(--max)) / 2 + var(--margem)));
+  scroll-padding-left: max(var(--margem), calc((100vw - var(--max)) / 2 + var(--margem)));
+}
+.divisoes__fila::-webkit-scrollbar { display: none; }
+.divisoes__fila::after { content: ""; flex: 0 0 max(1px, calc(var(--margem) - clamp(14px, 1.6vw, 24px))); }
+.divisao { position: relative; flex: 0 0 auto; height: clamp(320px, calc(100vh - 290px), 660px); height: clamp(320px, calc(100svh - 290px), 660px); aspect-ratio: 3 / 2; overflow: hidden; border-radius: 4px; cursor: zoom-in; scroll-snap-align: start; text-align: left; }
+.divisao--estreita { aspect-ratio: 4 / 5; }
+.divisao img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s var(--ease); -webkit-user-drag: none; }
+.divisao:hover img { transform: scale(1.04); }
+.divisao::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(24, 24, 16, 0.62) 0%, rgba(24, 24, 16, 0) 40%); pointer-events: none; }
+.divisao__legenda { position: absolute; left: clamp(18px, 2vw, 28px); right: 20px; bottom: clamp(16px, 2vw, 26px); z-index: 1; font-size: 14.5px; line-height: 1.4; color: rgba(255, 255, 255, 0.86); }
+.divisao__legenda b { display: block; margin-bottom: 4px; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(26px, 2.2vw, 34px); line-height: 1.05; color: #fff; }
+.divisao__mais {
+  position: absolute; top: 16px; right: 16px; z-index: 1; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff;
+  background: rgba(24, 24, 16, 0.32); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.divisoes__fim { flex: 0 0 clamp(260px, 24vw, 360px); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 26px; padding-left: clamp(8px, 1.6vw, 24px); }
+.divisoes__fim p { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(26px, 2.4vw, 36px); line-height: 1.2; }
+.divisoes__pe { margin-top: clamp(22px, 4vh, 40px); }
+.pista__barra { max-width: 320px; height: 1px; background: color-mix(in srgb, currentColor 22%, transparent); overflow: hidden; }
+.pista__barra span { display: block; height: 100%; background: currentColor; transform: scaleX(0.04); transform-origin: left; }
+/* presa ao ecrã (computador) */
+.divisoes.is-presa { padding: 0; }
+.divisoes.is-presa .divisoes__palco { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 84px 0 24px; overflow: hidden; }
+.divisoes.is-presa .divisoes__fila { overflow: visible; scroll-snap-type: none; will-change: transform; }
+@media (max-width: 900px) {
+  .divisoes__dica { display: none; }
+  .divisao { height: auto; width: 84vw; aspect-ratio: 4 / 5; }
+  .divisao--estreita { width: 72vw; }
+  .divisoes__fim { flex-basis: 72vw; }
+  .divisoes__pe { display: none; }
+}
+
+/* ============================================================
+   4. LÁ FORA — o terraço ao lado do texto; o relvado com um pormenor
+   ============================================================ */
+.fora { padding-top: var(--secao); }
+.fora__grelha { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(14px, 1.8vw, 28px); align-items: end; }
+.fora__texto { grid-column: 1 / span 4; grid-row: 1; align-self: center; padding-right: clamp(0px, 2vw, 32px); }
+.fora__texto .lead { margin-top: 24px; }
+/* em cima, o terraço; em baixo, a mesa posta (4 colunas, 3:4) e o relvado
+   (8 colunas, 3:2) ficam exatamente da mesma altura */
+.fora__a { grid-column: 5 / -1; grid-row: 1; aspect-ratio: 16 / 10; }
+.fora__detalhe { grid-column: 1 / span 4; grid-row: 2; align-self: stretch; aspect-ratio: auto; }
+.fora__c { grid-column: 5 / -1; grid-row: 2; aspect-ratio: 3 / 2; }
+@media (max-width: 900px) {
+  .fora__grelha { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .fora__texto { grid-column: 1 / -1; padding: 0 0 28px; }
+  .fora__a { grid-column: 1 / -1; grid-row: 2; aspect-ratio: 3 / 2; }
+  .fora__detalhe { grid-column: 1 / span 2; grid-row: 3; aspect-ratio: auto; height: 100%; }
+  .fora__c { grid-column: 3 / -1; grid-row: 3; aspect-ratio: 4 / 3; }
+}
+
+
+/* ============================================================
+   7. COMODIDADES — um pormenor e os ícones
+   ============================================================ */
+.comodidades { padding-top: var(--secao); }
+.comodidades__grelha { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(40px, 6vw, 104px); align-items: center; }
+.comodidades__foto { aspect-ratio: 4 / 5; }
+.icones { display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(24px, 3vw, 48px); margin-top: clamp(36px, 4vw, 56px); }
+.icones li { display: flex; align-items: center; gap: 16px; padding: 17px 0; border-top: 1px solid var(--linha); font-size: 16px; line-height: 1.35; }
+.icones svg { flex: 0 0 auto; width: 26px; height: 26px; fill: none; stroke: var(--azeitona-escura); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 900px) {
+  .comodidades__grelha { grid-template-columns: 1fr; }
+  .comodidades__foto { aspect-ratio: 4 / 3; }
+}
+@media (max-width: 480px) {
+  .icones { column-gap: 16px; }
+  .icones li { gap: 10px; padding: 14px 0; font-size: 14px; }
+  .icones svg { width: 22px; height: 22px; }
+}
+
+/* ============================================================
+   8. HÓSPEDES — uma só citação, sobre linho
+   ============================================================ */
+/* a citação fica mais perto das secções à volta, sem um fosso branco */
+.hospedes { padding: calc(var(--secao) * 0.6) 0; margin-top: calc(var(--secao) * 0.6); text-align: center; }
+.hospedes + .rota { padding-top: calc(var(--secao) * 0.4); }
+.destaque { max-width: 860px; margin: 0 auto; }
+.destaque p { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(22px, 2.2vw, 32px); line-height: 1.32; letter-spacing: -0.01em; text-wrap: balance; }
+.destaque figcaption { margin-top: 28px; font-size: 14.5px; font-weight: 600; opacity: 0.66; }
+/* no telemóvel, menos linho vazio entre a citação e as experiências */
+@media (max-width: 760px) { .hospedes { padding: 64px 0; margin-top: 72px; } .hospedes + .rota { padding-top: 64px; } }
+
+/* ============================================================
+   9. EXPERIÊNCIAS — no computador, a fila desliza na horizontal
+   enquanto se faz scroll (main.js); no telemóvel, com o dedo
+   ============================================================ */
+.rota { padding-top: var(--secao); }
+.rota__fila {
+  display: flex; gap: clamp(16px, 2vw, 32px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding: 0 var(--margem) 8px max(var(--margem), calc((100vw - var(--max)) / 2 + var(--margem)));
+  scroll-padding-left: max(var(--margem), calc((100vw - var(--max)) / 2 + var(--margem)));
+}
+.rota__fila::-webkit-scrollbar { display: none; }
+/* folga no fim da fila (o padding da direita não conta no scroll de uma fila flex) */
+.rota__fila::after { content: ""; flex: 0 0 max(1px, calc(var(--margem) - clamp(16px, 2vw, 32px))); }
+.rota__item { flex: 0 0 clamp(260px, 27vw, 420px); scroll-snap-align: start; }
+.rota__item:nth-child(even) { padding-top: clamp(16px, 4vh, 44px); }
+.rota__foto { height: clamp(300px, 50vh, 520px); overflow: hidden; border-radius: 4px; }
+.rota__foto img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.6s var(--ease); }
+.rota__item:hover .rota__foto img { transform: scale(1.04); }
+.rota__item b { display: block; margin-top: 22px; font-weight: 200; font-size: clamp(30px, 2.6vw, 42px); line-height: 1; letter-spacing: -0.045em; }
+.rota__item h3 { margin-top: 12px; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.rota__item p { margin-top: 4px; font-weight: 300; font-size: 15.5px; line-height: 1.5; opacity: 0.8; max-width: 32ch; }
+.rota__pe { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: clamp(28px, 4vh, 48px); }
+.rota__barra { flex: 1; max-width: 320px; height: 1px; background: var(--linha); overflow: hidden; }
+.rota__barra span { display: block; height: 100%; background: currentColor; transform: scaleX(0.04); transform-origin: left; }
+.rota__mapa { display: inline-block; padding: 12px 0; font-size: 14.5px; font-weight: 600; text-underline-offset: 4px; white-space: nowrap; }
+/* presa ao ecrã (computador): a pista dá a altura, o palco fica preso */
+.rota__pista.is-presa .rota__palco { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 84px 0 20px; overflow: hidden; }
+/* a foto fica com a altura que sobra no ecrã depois do título, do texto dos
+   cartões e do pé (barra e link do Google Maps): assim o pé nunca sai do ecrã,
+   seja qual for a altura do ecrã ou o tamanho do título. Até 520 px. */
+.rota__pista.is-presa .rota__cabeca, .rota__pista.is-presa .rota__pe { flex: none; }
+.rota__pista.is-presa .rota__fila { flex: 0 1 calc(520px + 250px); min-height: 0; overflow: visible; scroll-snap-type: none; will-change: transform; }
+.rota__pista.is-presa .rota__item { display: flex; flex-direction: column; }
+.rota__pista.is-presa .rota__item:nth-child(odd) { padding-bottom: clamp(16px, 4vh, 44px); }
+.rota__pista.is-presa .rota__foto { flex: 1 1 0; min-height: 140px; height: auto; }
+.rota__pista.is-presa .rota__item p { min-height: 3em; }
+.rota__pista.is-presa .rota__cabeca { margin-bottom: clamp(20px, 4vh, 48px); }
+.rota__pista:not(.is-presa) .rota__barra { display: none; }
+@media (max-width: 900px) {
+  .rota__item { flex-basis: 76vw; }
+  .rota__item:nth-child(even) { padding-top: 0; }
+  .rota__foto { height: auto; aspect-ratio: 4 / 5; }
+}
+
+/* ============================================================
+   8. RESERVAR — metade fotografia, metade azeitona
+   ============================================================ */
+.reservar { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; min-height: 100svh; margin-top: var(--secao); }
+/* a foto fica presa ao ecrã enquanto se lê a coluna: o recorte é sempre o do ecrã */
+.reservar__foto { position: sticky; top: 0; align-self: start; height: 100vh; height: 100svh; min-height: 360px; border-radius: 0; }
+.reservar__foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 38% 50%; }
+.reservar__corpo { padding: clamp(72px, 9vw, 140px) clamp(24px, 6vw, 104px); display: flex; flex-direction: column; justify-content: center; }
+.reservar__corpo .lead { margin-top: 32px; }
+.ficha { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; margin-top: clamp(32px, 4vw, 48px); padding-top: 26px; border-top: 1px solid var(--linha); }
+.ficha b { display: block; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.ficha span { display: block; margin-top: 2px; font-size: 14.5px; opacity: 0.8; }
+/* sobre o azeitona, o botão principal é branco (como os do site da casa, mas ao contrário) */
+.reservar .botao--pinho { background: var(--claro); color: var(--tinta-escura); }
+.reservar .botao--pinho:hover { background: #f1eee9; }
+.reservar__botoes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 38px; }
+.reservar__outros { margin-top: 22px; font-size: 15px; }
+.reservar__outros a { font-weight: 600; text-underline-offset: 4px; }
+.reservar__info { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: clamp(44px, 5vw, 72px); padding-top: 28px; border-top: 1px solid var(--linha); }
+.reservar__info h3 { font-size: 14.5px; font-weight: 600; margin-bottom: 8px; }
+.reservar__info li { font-size: 15px; line-height: 1.45; padding: 6px 0; opacity: 0.84; }
+.reservar__casa { margin-top: clamp(40px, 4.5vw, 64px); }
+.reservar__casa p { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(21px, 1.7vw, 25px); line-height: 1.38; max-width: 30ch; }
+.reservar__casa footer { margin-top: 12px; font-size: 14px; font-weight: 600; opacity: 0.8; }
+
+@media (max-width: 900px) {
+  .reservar { grid-template-columns: 1fr; min-height: 0; }
+  .reservar__foto { position: relative; height: auto; aspect-ratio: 4 / 3; min-height: 0; }
+}
+@media (max-width: 560px) {
+  .reservar__botoes .botao { flex: 1 1 100%; }
+  .reservar__info { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   RODAPÉ
+   ============================================================ */
+.rodape { background: var(--tinta-escura); color: rgba(244, 241, 234, 0.7); padding: 76px 0 36px; font-size: 15px; line-height: 1.6; }
+.rodape a { color: inherit; text-underline-offset: 3px; }
+.rodape a:hover { color: var(--claro); }
+.rodape__cima { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; padding-bottom: 44px; border-bottom: 1px solid rgba(244, 241, 234, 0.14); }
+.rodape__marca { display: flex; align-items: center; gap: 16px; color: var(--claro); }
+.rodape__marca .marca__pedras { width: 58px; height: 65px; }
+.rodape__marca .marca__letras { width: 104px; height: 78px; }
+.rodape__contactos { display: flex; gap: clamp(28px, 4vw, 64px); flex-wrap: wrap; }
+/* redes sociais: o símbolo de cada uma, monocromático, e o nome na rede */
+.rodape__redes { display: grid; justify-items: start; align-content: start; }
+.rodape__contactos .rodape__redes a { display: inline-flex; align-items: center; gap: 10px; }
+.rodape__redes svg { width: 19px; height: 19px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rodape__redes svg .cheio { fill: currentColor; stroke: none; }
+.rodape__baixo { display: grid; gap: 8px; padding-top: 26px; font-size: 13.5px; }
+.rodape__baixo p:last-child { display: flex; gap: 24px; flex-wrap: wrap; }
+
+/* CTA fixo no telemóvel */
+.cta-fixo {
+  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 90; display: none;
+  padding: 14px 28px; background: var(--pinho); color: var(--tinta-escura); font-weight: 700; font-size: 15.5px; text-decoration: none;
+  border-radius: 999px; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.45); transform: translateY(160%); transition: transform .5s var(--ease);
+}
+.cta-fixo.is-visivel { transform: none; }
+@media (max-width: 760px) {
+  .cta-fixo { display: block; }
+}
+/* ligações de texto com altura para o dedo em qualquer ecrã de toque */
+@media (max-width: 760px), (pointer: coarse) {
+  .reservar__outros a, .rodape__contactos a, .rodape__baixo a { display: inline-block; padding: 10px 0; }
+}
+
+/* ============================================================
+   VISOR
+   ============================================================ */
+.visor { position: fixed; inset: 0; z-index: 300; background: #161715; color: var(--claro); display: grid; grid-template-rows: auto 1fr auto auto; opacity: 0; transition: opacity .4s var(--ease); }
+.visor[hidden] { display: none; }
+.visor.is-aberto { opacity: 1; }
+.visor svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.visor__topo { display: flex; align-items: center; gap: 20px; padding: 16px var(--margem); }
+.visor__titulo { font-weight: 400; font-size: 26px; line-height: 1; letter-spacing: -0.04em; }
+.visor__conta { font-size: 14px; opacity: 0.6; margin-right: auto; font-variant-numeric: tabular-nums; }
+.visor__fechar { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: rgba(244, 241, 234, 0.08); }
+.visor__fechar:hover { background: rgba(244, 241, 234, 0.18); }
+.visor__palco { position: relative; display: grid; place-items: center; min-height: 0; padding: 0 clamp(12px, 7vw, 110px); touch-action: pan-y; }
+.visor__palco img { max-width: 100%; max-height: calc(100vh - 200px); max-height: calc(100svh - 200px); width: auto; height: auto; object-fit: contain; border-radius: 3px; transition: opacity .3s var(--ease); }
+.visor__palco img.is-a-mudar { opacity: 0; }
+.visor__nav { position: absolute; top: 50%; transform: translateY(-50%); width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: rgba(244, 241, 234, 0.08); }
+.visor__nav:hover { background: rgba(244, 241, 234, 0.2); }
+.visor__nav--ant { left: clamp(8px, 2vw, 30px); }
+.visor__nav--seg { right: clamp(8px, 2vw, 30px); }
+.visor__legenda { text-align: center; padding: 14px var(--margem) 4px; font-size: 15.5px; opacity: 0.86; min-height: 44px; }
+.visor__miniaturas { display: flex; gap: 8px; padding: 10px var(--margem) 20px; overflow-x: auto; scrollbar-width: none; justify-content: safe center; }
+.visor__miniaturas::-webkit-scrollbar { display: none; }
+.visor__miniaturas button { flex: 0 0 auto; width: 64px; height: 46px; overflow: hidden; border-radius: 3px; opacity: 0.4; outline: 1px solid transparent; outline-offset: 2px; transition: opacity .3s; }
+.visor__miniaturas button img { width: 100%; height: 100%; object-fit: cover; }
+.visor__miniaturas button:hover { opacity: 0.8; }
+.visor__miniaturas button.is-atual { opacity: 1; outline-color: var(--pinho); }
+@media (max-width: 640px) { .visor__nav { display: none; } .visor__palco { padding: 0 8px; } }
+
+/* ============================================================
+   MOVIMENTO REDUZIDO: tudo no estado final, sem animações
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html:not(.lenis) { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; transition-duration: 0.01ms !important; }
+  .abertura { display: none; }
+  .hero__plano img { transform: none; }
+  .hero__nome .l { opacity: 1; filter: none; transform: none; }
+  .hero__titulo, .hero__sub, .hero__descer { opacity: 1; }
+  .hero__plano img { animation: none !important; }
+  .js .titulo .sobe { transform: none; }
+  .js .cresce { height: auto; }
+  .js .cresce__palco { position: relative; }
+  .cresce__titulo { inset: auto; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .js [data-revela] { clip-path: none; }
+  .js [data-revela] > * { transform: none; }
+}
+
+/* ============================================================
+   TELEMÓVEL DEITADO (pouca altura): as fotos medem-se pela altura do ecrã,
+   para se verem inteiras. A fila não fica presa (main.js, "largo").
+   ============================================================ */
+@media (orientation: landscape) and (max-height: 520px) {
+  .divisoes__dica, .divisoes__pe { display: none; }
+  .divisao { width: auto; height: 74vh; height: 74svh; aspect-ratio: 3 / 2; }
+  .divisao--estreita { aspect-ratio: 4 / 5; }
+  .divisoes__fim { flex-basis: 40vw; }
+  .rota__item { flex-basis: 42vw; }
+  .rota__item:nth-child(even) { padding-top: 0; }
+  .rota__foto { height: 62vh; height: 62svh; aspect-ratio: auto; }
+  .comodidades__grelha { grid-template-columns: 1fr; }
+  .comodidades__foto { aspect-ratio: 16 / 9; }
+}
