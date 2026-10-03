@@ -1,6 +1,6 @@
 /* Casa da Gueira — interações (versão 3)
    Um IIFE só, sem dependências. Cada bloco trata de uma parte da página.
-   A abertura (as pedras do logótipo) e a entrada do nome são só CSS.
+   A entrada do nome é só CSS.
    Os efeitos de scroll escrevem variáveis CSS; o desenho está em styles.css. */
 (function () {
   'use strict';
@@ -421,7 +421,7 @@
 
   /* ------------------------------------------------------------
      FILME do hero: quatro planos que trocam a cada 5,5 s (o primeiro 4,5 s
-     depois da abertura), com uma troca curta e a câmara a entrar já em
+     depois de a página abrir), com uma troca curta e a câmara a entrar já em
      movimento (CSS: --mov em cada plano). Traços em baixo mostram o
      progresso e saltam para cada foto. Cada foto só descarrega quando o
      plano anterior entra. Para quando o hero sai do ecrã ou o separador
@@ -432,7 +432,7 @@
   if (filme && !reduzido) {
     var planos = $$('.hero__plano', filme), botao = $('#heroPausa'), marcas = $('#heroMarcas');
     var tracos = marcas ? $$('.hero__marca', marcas) : [];
-    // tempos: o 1.º plano troca 4,5 s depois da abertura; os outros duram 5,5 s;
+    // tempos: o 1.º plano troca 4,5 s depois de a página abrir; os outros duram 5,5 s;
     // a troca leva 0,8 s (styles.css, .hero__plano)
     var PRIMEIRO = 4500, DUR = 5500, FUNDE = 800, ia = 0, tempo = null, falta = 0, inicio = 0;
     var parado = false, noEcra = true, alvo = null;
